@@ -31,7 +31,6 @@ st.write(
     """
 )
 
-
 option = st.selectbox(
     "How would you like to be Fruit?",
     ("Apple", "Banana", "Mango"),
@@ -39,6 +38,7 @@ option = st.selectbox(
 
 st.write("You selected:", option)
 
+# Get the active session
 session = get_active_session()
 my_dataframe = session.table("smoothies.public.fruit_options")
 fruit_names = my_dataframe.select("FRUIT_NAME").to_pandas()
@@ -55,17 +55,14 @@ if ingredients_list:
     st.write("Ingredients String:", ingredients_string)
 
     # Create the SQL insert statement
-    my_insert_stmt = """ insert into smoothies.public.orders(ingredients)
-            values ('""" + ingredients_string + """' )"""	
+    my_insert_stmt = """INSERT INTO smoothies.public.orders(ingredients)
+                        VALUES ('""" + ingredients_string + """' )"""	
     st.write(my_insert_stmt)
-    # Show the order submit button
-    # time_to_insert = st.button('Submit Order')
 
-    #if time_to_insert:
+    # Show the order submit button
+    time_to_insert = st.button('Submit Order')
+
+    if time_to_insert:
         # Insert the data into the database
-        #session.sql(my_insert_stmt).collect()
-        
-        #st.success('Your Smoothie is ordered!', icon="✅")
-import requests
-fruityvice_response = requests.get("https://fruityvice.com/api/fruit/watermelon")
-st.text(fruityvice_response)
+        session.sql(my_insert_stmt).collect()  # Uncommented this line to execute the SQL
+        st.success('Your Smoothie is ordered!', icon="✅")
