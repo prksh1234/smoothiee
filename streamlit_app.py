@@ -1,8 +1,10 @@
 # Import necessary packages
 import streamlit as st
-import requests
-from snowflake.snowpark.context import get_active_session
+#from snowflake.snowpark.context import get_active_session
 from snowflake.snowpark.functions import col
+
+cnx = st.connection("snowflake") 
+session = cnx.session()
 
 # Title for the app
 st.title(":cup_with_straw: Customize Your Smoothie! :cup_with_straw:")
@@ -40,7 +42,7 @@ option = st.selectbox(
 st.write("You selected:", option)
 
 # Get the active session
-session = get_active_session()
+#session = get_active_session()
 my_dataframe = session.table("smoothies.public.fruit_options")
 fruit_names = my_dataframe.select("FRUIT_NAME").to_pandas()
 st.dataframe(data=my_dataframe, use_container_width=True)
@@ -56,7 +58,8 @@ if ingredients_list:
     st.write("Ingredients String:", ingredients_string)
 
     # Create the SQL insert statement
-    my_insert_stmt = f"INSERT INTO smoothies.public.orders(ingredients) VALUES ('{ingredients_string}')"	
+    my_insert_stmt = """INSERT INTO smoothies.public.orders(ingredients,name_on_order)
+                        VALUES ('""" + ingredients_string + """' ,'""" + name_on_order + """')"""
     st.write(my_insert_stmt)
 
     # Show the order submit button
@@ -64,18 +67,5 @@ if ingredients_list:
 
     if time_to_insert:
         # Insert the data into the database
-        session.sql(my_insert_stmt).collect()  # Executes the SQL insert
+        session.sql(my_insert_stmt).collect()  # Uncommented this line to execute the SQL
         st.success('Your Smoothie is ordered!', icon="✅")
-
-# New section to display Fruityvice nutrition information
-st.write("Fruityvice Nutrition Information:")
-
-# Fetching data from Fruityvice API
-fruityvice_response = requests.get("https://fruityvice.com/api/fruit/watermelon")
-
-if fruityvice_response.status_code == 200:
-    # Parsing JSON response and displaying it in a dataframe
-    fruityvice_data = fruityvice_response.json()
-    st.json(fruityvice_data)  # Display raw JSON data
-else:
-    st.error("Failed to fetch data from Fruityvice API.")
