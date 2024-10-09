@@ -56,8 +56,7 @@ if ingredients_list:
     st.write("Ingredients String:", ingredients_string)
 
     # Create the SQL insert statement
-    my_insert_stmt = """INSERT INTO smoothies.public.orders(ingredients)
-                        VALUES ('""" + ingredients_string + """' )"""	
+    my_insert_stmt = f"INSERT INTO smoothies.public.orders(ingredients) VALUES ('{ingredients_string}')"	
     st.write(my_insert_stmt)
 
     # Show the order submit button
@@ -65,11 +64,18 @@ if ingredients_list:
 
     if time_to_insert:
         # Insert the data into the database
-        session.sql(my_insert_stmt).collect()  # Uncommented this line to execute the SQL
+        session.sql(my_insert_stmt).collect()  # Executes the SQL insert
         st.success('Your Smoothie is ordered!', icon="✅")
-# New section to display fruityvice nutrition information
 
-fruityvice response =
-requests.get("https://fruityvice.com/api/fruit/watermelon")
-#st.text(fruityvice_response.json())
-fv_df = st.dataframe (data=fruityvice_response.json(), use_container_width=True)
+# New section to display Fruityvice nutrition information
+st.write("Fruityvice Nutrition Information:")
+
+# Fetching data from Fruityvice API
+fruityvice_response = requests.get("https://fruityvice.com/api/fruit/watermelon")
+
+if fruityvice_response.status_code == 200:
+    # Parsing JSON response and displaying it in a dataframe
+    fruityvice_data = fruityvice_response.json()
+    st.json(fruityvice_data)  # Display raw JSON data
+else:
+    st.error("Failed to fetch data from Fruityvice API.")
