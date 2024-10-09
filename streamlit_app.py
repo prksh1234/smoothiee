@@ -1,5 +1,6 @@
 # Import necessary packages
 import streamlit as st
+import requests
 from snowflake.snowpark.context import get_active_session
 from snowflake.snowpark.functions import col
 
@@ -67,7 +68,7 @@ if ingredients_list:
         session.sql(my_insert_stmt).collect()  # Uncommented this line to execute the SQL
         st.success('Your Smoothie is ordered!', icon="✅")
 # New section to display fruityvice nutrition information
-import requests
+
 fruityvice response =
 requests.get("https://fruityvice.com/api/fruit/watermelon")
 #st.text(fruityvice_response.json())
