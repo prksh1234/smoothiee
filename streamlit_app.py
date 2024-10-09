@@ -1,37 +1,71 @@
-# Import python packages
+# Import necessary packages
 import streamlit as st
-from snowflake.snowpark.functions import col, when_matched
-cnx = st.connection("snowflake") 
-session = cnx.session()
-# Write directly to the app
+from snowflake.snowpark.context import get_active_session
+from snowflake.snowpark.functions import col
+
 # Title for the app
-st.title(":cup_with_straw: Pending Orders Smoothie! :cup_with_straw:")
+st.title(":cup_with_straw: Customize Your Smoothie! :cup_with_straw:")
 
 # Smoothie customization section
-st.write("OIrders need to ftll Smoothie!")
+st.write("Choose the fruits you want in your custom Smoothie!")
 
-#name_on_order = st.text_input('Name on Smoothie:')
-#st.write('The name on your Smoothie will be:', name_on_order)
+# User inputs for smoothie customization
+name_on_order = st.text_input('Name on Smoothie:')
+fruit_options = st.multiselect(
+    'Select fruits:',
+    ['Banana', 'Strawberry', 'Mango', 'Blueberry', 'Pineapple']
+)
+if fruit_options:
+    st.write(f"You've chosen: {', '.join(fruit_options)}")
 
-session = get_active_session ()
-#my_dataframe = session.table("smoothies.public.fruit_options").select(col('FRUIT_NAME'))
+# Movie title section
+title = st.text_input('Movie title', 'Life of Brian')
+st.write('The current movie title is', title)
 
-my_dataframe = session.table("smoothies.public.orders").filter(col("ORDER_FILLED")==0).collect()
-editable_df = st.data_editor(my_dataframe)
+# Additional info and links
+st.write(
+    """Replace this example with your own code!
+    **And if you're new to Streamlit,** check
+    out our easy-to-follow guides at
+    [docs.streamlit.io](https://docs.streamlit.io).
+    """
+)
 
-submitted = st.button('Submit')
-if submitted:
-    
-    og_dataset = session.table("smoothies.public.orders")
-    edited_dataset = session.create_dataframe(editable_df)
-    
-    try:
-        og_dataset.merge(edited_dataset
-                     , (og_dataset['ORDER_UID'] == edited_dataset['ORDER_UID'])
-                     , [when_matched().update({'ORDER_FILLED': edited_dataset['ORDER_FILLED']})]
-                    )
-        st.success('Orders updated', icon = '👍')
-    except Exception as e:
-        st.write(f"Something went wrong: {str(e)}")
-else:
-    st.success('There are no pending orders right now', icon='👍')
+
+option = st.selectbox(
+    "How would you like to be Fruit?",
+    ("Apple", "Banana", "Mango"),
+)
+
+st.write("You selected:", option)
+
+session = get_active_session()
+my_dataframe = session.table("smoothies.public.fruit_options")
+fruit_names = my_dataframe.select("FRUIT_NAME").to_pandas()
+st.dataframe(data=my_dataframe, use_container_width=True)
+
+# Allow user to select up to 5 ingredients
+ingredients_list = st.multiselect('Choose up to 5 ingredients:', fruit_names['FRUIT_NAME'].tolist())
+
+st.write("You selected:", ingredients_list)
+
+if ingredients_list:
+    # Join the selected ingredients into a single string, with a space between each fruit
+    ingredients_string = ' '.join(ingredients_list)
+    st.write("Ingredients String:", ingredients_string)
+
+    # Create the SQL insert statement
+    my_insert_stmt = """ insert into smoothies.public.orders(ingredients)
+            values ('""" + ingredients_string + """' )"""	
+    st.write(my_insert_stmt)
+    # Show the order submit button
+    # time_to_insert = st.button('Submit Order')
+
+    #if time_to_insert:
+        # Insert the data into the database
+        #session.sql(my_insert_stmt).collect()
+        
+        #st.success('Your Smoothie is ordered!', icon="✅")
+import requests
+fruityvice_response = requests.get("https://fruityvice.com/api/fruit/watermelon")
+st.text(fruityvice_response)
